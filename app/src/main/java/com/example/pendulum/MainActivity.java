@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
     static BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
     boolean startStudyCheck = false;
-
+    long startTime = System.currentTimeMillis()/60000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         TextView blueView = findViewById(R.id.bluetoothEna);
         Button startStudy = findViewById(R.id.startStudy);
         startStudy.setVisibility(View.GONE);
-
+        GraphView graphView = findViewById(R.id.graphView);
         ConnectThread ConnectThread = new ConnectThread();
 
         // есть переменная bool кооторая меняется по нажатию на кнопку если переменная bool = 1 то начианется
@@ -34,11 +34,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startStudyCheck = !startStudyCheck;
-                if (startStudyCheck == true) {
+                if (startStudyCheck == true) { //начало измерения
+                    startTime = System.currentTimeMillis()/60000;
                     startStudy.setText("Закончить");
                     ConnectThread.sendData("true");
                     // на есп 32 отправляется true, андроид получает данные с есп32
-                } else {
+                } else { // конец измерения
                     startStudy.setText("Начать");
                     ConnectThread.sendData("false");
                     // на есп 32 отправляется false, андроид ничего не получает
@@ -57,17 +58,25 @@ public class MainActivity extends AppCompatActivity {
                         blueView.post(new Runnable() {
                             public void run() {
                                 if (bluetoothAdapter.isEnabled()) {
-                                    if (searchDeviceToConnect("ESP32_Device")) {
+                                    if (searchDeviceToConnect("ESP32_Device2")) {
                                         //код для передачи данных
                                         blueView.setVisibility(View.GONE);
                                         startStudy.setVisibility(View.VISIBLE);
+
                                         // вкючается отображение графика
                                         // запускается поток обмена данными с есп32 (сокет слушает данные )
                                         try {
                                             ConnectThread.start();
+                                            //graphView.setPoint(ConnectThread.getPoint(startTime-System.currentTimeMillis()/60000));
                                             Log.d("ConnectTread", "ПОТОК СОЗДАН");
                                         } catch (Exception e) {
                                             Log.d("ConnectTread", "ПОТОК НЕ СОЗДАН");
+                                        }
+                                        try {
+                                            graphView.setPoint(ConnectThread.getPoint(System.currentTimeMillis()/60000-startTime));
+                                            Log.d("point", "точка построена");
+                                        } catch (Exception e) {
+                                            Log.e("point", "точка НЕ построена");
                                         }
 
                                     } else {
@@ -85,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
                             }
                         });
-                        Thread.sleep(400);
+                        Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
