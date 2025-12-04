@@ -14,7 +14,9 @@ import java.util.ArrayList;
 public class GraphView extends View {
     private Paint paint;
     private Path path;
-    private ArrayList<FloatPoint> arrPoints = new ArrayList<>();
+    private int sizeArrPoint = 100; // кол-во точек на графике
+    private ArrayList<FloatPoint> arrPoints = new ArrayList<>(sizeArrPoint); // точки на графике
+    private float fd = 5/sizeArrPoint; // частота дискретизации
 
     public GraphView(Context context) {
         super(context);
@@ -43,7 +45,7 @@ public class GraphView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        //drawAxisGrid(canvas);
+        drawAxisGrid(canvas);
 
         drawFuncGraph(canvas);
 
@@ -91,9 +93,12 @@ public class GraphView extends View {
         for (int i = 0; i < arrPoints.size(); i++) {
             float divX = (getWidth()-40)/13;
             float divY = (getHeight())/9;
-            float x = 40+arrPoints.get(i).x*10;
-            float y = 50+arrPoints.get(i).y;
+            float x = 40+arrPoints.get(i).x*5;
+
+            float y = 42+arrPoints.get(i).y*100;
+            Log.e("pointY", String.valueOf(y));
             canvas.drawCircle(x,y,6,paint);
+            //Log.d("point", "точка построена");
 //            if (firstPoint) {
 //
 //                path.moveTo(x, y);
@@ -109,7 +114,13 @@ public class GraphView extends View {
 
     }
     public void setPoint(FloatPoint point) {
-        arrPoints.add(point);
+        //Log.d("arrPointsSize", String.valueOf(arrPoints.size()));
+        if (arrPoints.size() < sizeArrPoint) {
+            arrPoints.add(point);
+        } else {
+            arrPoints.remove(0);
+            arrPoints.add(point);
+        }
         invalidate();
     }
 

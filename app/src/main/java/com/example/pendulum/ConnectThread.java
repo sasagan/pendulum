@@ -42,35 +42,45 @@ public class ConnectThread extends Thread {
             Log.e("Except", "СОЕДИНЕНИЯ НЕТ");
         }
         // получение данных
-        try {
-            inData = bluSocket.getInputStream();
-            outData = bluSocket.getOutputStream();
-        } catch (Exception e) {
-            Log.e("inDataExcept", "данные не получены");
-        }
-        byte[] buf = new byte[256];
-        int bytes;
-        try {
-            bytes = inData.read(buf);
-            strInData = new String(buf,0, bytes);
-            Log.d("inDataRead", strInData);
-            // тут обновляется массив точек
+        while (true) {
+            try {
+                inData = bluSocket.getInputStream();
+                outData = bluSocket.getOutputStream();
+            } catch (Exception e) {
+                Log.e("inDataExcept", "данные не получены");
+            }
+            byte[] buf = new byte[16];
+            int bytes;
+            Log.d("TryInDataRead", "попытка записи данных");
+            try {
+                bytes = inData.read(buf);
+                strInData = new String(buf, 0, bytes);
+                Log.d("inDataRead", String.valueOf(parseStrInDataFloat(strInData)));
+                // тут обновляется массив точек
 
-            // обновляется view нашего графика
-        } catch (IOException e) {
-            Log.e("inDataExcept", "данные не получилось обработать");
+                // обновляется view нашего графика
+            } catch (IOException e) {
+                Log.e("inDataExcept", "данные не получилось обработать");
+            }
         }
 
     }
     public FloatPoint getPoint(float time) {
 
         FloatPoint point = new FloatPoint(time, parseStrInDataFloat(strInData)); // В strInData большое количство чисел, ф-ия не может сделать из них одно число
-        Log.d("getPoint", String.valueOf(strInData.length()));     // strInData выглядит: "0.03\r\n-0.03\r\n-0.03\r\n    .....    "
-        return point;                                                  // Нужно взять только одно первое число без \r\n
+       // Log.d("getPoint", strInData);     // strInData выглядит: "0.03\r\n-0.03\r\n-0.03\r\n    .....    "
+        return point;                         // Нужно взять только одно первое число без \r\n
     }
 
     private float parseStrInDataFloat(String strData) {
-        return Float.parseFloat(strData.split("\r\n")[0].trim());
+        try {
+            float data = Float.parseFloat(strData.split("\r\n")[0].trim());
+            return data;
+        } catch (Exception e) {
+            return 0.0f;
+        }
+        //Log.e("pointData", strInData);
+
     }
     public void sendData(String message) {
 //        try {
