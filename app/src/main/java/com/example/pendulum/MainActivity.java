@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
                 startStudyCheck = !startStudyCheck;
                 if (startStudyCheck == true) { //начало измерения
                     startTime = System.currentTimeMillis()/1000;
+                    graphView.arrayRemove();
                     startStudy.setText("Закончить");
                     ConnectThread.sendData("true");
                     // на есп 32 отправляется true, андроид получает данные с есп32
@@ -72,23 +73,20 @@ public class MainActivity extends AppCompatActivity {
                                         } catch (Exception e) {
                                             //Log.d("ConnectTread", "ПОТОК НЕ СОЗДАН");
                                         }
+                                        if (startStudyCheck == true) {
+                                            try {
+                                                graphView.setPoint(ConnectThread.getPoint(System.currentTimeMillis() / 1000 - startTime));
 
-                                        try {
-
-                                            graphView.setPoint(ConnectThread.getPoint(System.currentTimeMillis()/1000-startTime));
-
-                                            //Log.d("point", "точка построена");
-                                        } catch (Exception e) {
-                                            //Log.e("point", "точка НЕ построена");
+                                                //Log.d("point", "точка построена");
+                                            } catch (Exception e) {
+                                                //Log.e("point", "точка НЕ построена");
+                                            }
                                         }
-
                                     } else {
                                         blueView.setVisibility(View.VISIBLE);
                                         blueView.setText("Подключитесь к ESP");
                                         startStudy.setVisibility(View.GONE);
                                     }
-
-
                                 } else {
                                     blueView.setVisibility(View.VISIBLE);
                                     blueView.setText("Включите bluetooth");
@@ -120,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             }
-
         }
         return false;
     }

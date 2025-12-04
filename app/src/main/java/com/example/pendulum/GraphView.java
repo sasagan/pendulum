@@ -14,9 +14,14 @@ import java.util.ArrayList;
 public class GraphView extends View {
     private Paint paint;
     private Path path;
-    private int sizeArrPoint = 100; // кол-во точек на графике
+    private int sizeArrPoint = 120; // кол-во точек на графике         по 10 точек на одно деление
     private ArrayList<FloatPoint> arrPoints = new ArrayList<>(sizeArrPoint); // точки на графике
     private float fd = 5/sizeArrPoint; // частота дискретизации
+
+    // цена деления по x = 5 сек это 80 пикселей        делений 12
+    // цена деления по y = 0.5 это 80 пикселей          делений 4 и -4
+    // одна точка по x это = 40+a*8
+    // одна точка по у это = getHeight()/2 - b*160
 
     public GraphView(Context context) {
         super(context);
@@ -48,8 +53,6 @@ public class GraphView extends View {
         drawAxisGrid(canvas);
 
         drawFuncGraph(canvas);
-
-
     }
 
     private void drawAxisGrid(Canvas canvas) {
@@ -91,12 +94,12 @@ public class GraphView extends View {
         path.reset();
         boolean firstPoint = true;
         for (int i = 0; i < arrPoints.size(); i++) {
-            float divX = (getWidth()-40)/13;
-            float divY = (getHeight())/9;
-            float x = 40+arrPoints.get(i).x*5;
+            //float divX = (getWidth()-40)/13;
+            //float divY = (getHeight())/9;
+            float x = 40+arrPoints.get(i).x*8; // = 40+a*8
 
-            float y = 42+arrPoints.get(i).y*100;
-            Log.e("pointY", String.valueOf(y));
+            float y = getHeight()/2-arrPoints.get(i).y*160; // = getHeight()/2 - b*160
+           // Log.e("pointY", String.valueOf(y));
             canvas.drawCircle(x,y,6,paint);
             //Log.d("point", "точка построена");
 //            if (firstPoint) {
@@ -109,19 +112,23 @@ public class GraphView extends View {
             //canvas.drawPath(path, paint);
         }
         //Log.d("массив", String.valueOf(arrPoints.size()));
-
-
-
     }
     public void setPoint(FloatPoint point) {
         //Log.d("arrPointsSize", String.valueOf(arrPoints.size()));
         if (arrPoints.size() < sizeArrPoint) {
             arrPoints.add(point);
         } else {
+            for (int i = sizeArrPoint-1; i > 1; i--) {
+                arrPoints.get(i).x = arrPoints.get(i-1).x;
+            }
             arrPoints.remove(0);
+            point.x = arrPoints.get(sizeArrPoint-2).x;
             arrPoints.add(point);
         }
         invalidate();
+    }
+    public void arrayRemove() {
+        this.arrPoints = new ArrayList<>(sizeArrPoint);
     }
 
 }
